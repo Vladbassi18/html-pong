@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ping Pong Game</title>
+<style>
+    canvas {
+        border: 1px solid black;
+        display: block;
+        margin: 0 auto;
+    }
+</style>
+</head>
+<body>
+<canvas id="pingPongCanvas" width="1000" height="500"></canvas>
+<script>
+    const canvas = document.getElementById("pingPongCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Configurações iniciais
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 5;
+    let ballSpeedY = 5;
+    const paddleWidth = 10;
+    const paddleHeight = 100;
+    let paddle1Y = canvas.height / 2 - paddleHeight / 2;
+    let paddle2Y = canvas.height / 2 - paddleHeight / 2;
+    const paddleSpeed = 10;
+    let player1Score = 0;
+    let player2Score = 0;
+
+    function drawRect(x, y, width, height, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, width, height);
+    }
+
+    function drawCircle(x, y, radius, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawNet() {
+        for (let i = 0; i < canvas.height; i += 40) {
+            drawRect(canvas.width / 2 - 1, i, 2, 20, "white");
+        }
+    }
+
+    function drawScore() {
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("Player 1: " + player1Score, 50, 50);
+        ctx.fillText("Player 2: " + player2Score, canvas.width - 150, 50);
+    }
+
+    function draw() {
+        // Limpar o canvas
+        drawRect(0, 0, canvas.width, canvas.height, "black");
+
+        // Desenhar a bola
+        drawCircle(ballX, ballY, 10, "white");
+
+        // Desenhar as paletas dos jogadores
+        drawRect(0, paddle1Y, paddleWidth, paddleHeight, "white");
+        drawRect(canvas.width - paddleWidth, paddle2Y, paddleWidth, paddleHeight, "white");
+
+        // Desenhar a rede
+        drawNet();
+
+        // Desenhar a pontuação
+        drawScore();
+    }
+
+    function move() {
+        // Movimento da bola
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        // Colisão com as paredes superior e inferior
+        if (ballY < 0 || ballY > canvas.height) {
+            ballSpeedY = -ballSpeedY;
+        }
+
+        // Colisão com as paletas
+        if (ballX < paddleWidth && ballY > paddle1Y && ballY < paddle1Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        } else if (ballX > canvas.width - paddleWidth && ballY > paddle2Y && ballY < paddle2Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+        }
+
+        // Verificar se a bola sai pela lateral
+        if (ballX < 0) {
+            // Player 2 ganha um ponto
+            player2Score++;
+            resetBall();
+        } else if (ballX > canvas.width) {
+            // Player 1 ganha um ponto
+            player1Score++;
+            resetBall();
+        }
+    }
+
+    function resetBall() {
+        // Resetar a posição da bola
+        ballX = canvas.width / 2;
+        ballY = canvas.height / 2;
+        ballSpeedX = -ballSpeedX; // Muda a direção da bola
+    }
+
+    function update() {
+        move();
+        draw();
+    }
+
+    function keyDownHandler(e) {
+        // Movimento da paleta do jogador 1
+        if (e.key === "ArrowUp" && paddle1Y > 0) {
+            paddle1Y -= paddleSpeed;
+        } else if (e.key === "ArrowDown" && paddle1Y < canvas.height - paddleHeight) {
+            paddle1Y += paddleSpeed;
+        }
+
+        // Movimento da paleta do jogador 2
+        if (e.key === "w" && paddle2Y > 0) {
+            paddle2Y -= paddleSpeed;
+        } else if (e.key === "s" && paddle2Y < canvas.height - paddleHeight) {
+            paddle2Y += paddleSpeed;
+        }
+    }
+
+    document.addEventListener("keydown", keyDownHandler);
+
+    setInterval(update, 1000 / 60); // Atualiza a cada 1/60 de segundo
+</script>
+</body>
+</html>
